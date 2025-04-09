@@ -70,12 +70,12 @@
         error: null
       };
     },
-    created() {
+                   created() {
       this.fetchCars();
     },
     methods: {
       fetchCars() {
-        this.loading = true;
+        this.loading = false;
         this.error = null;
         
         axios.get('/api/cars')
