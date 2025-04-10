@@ -1,141 +1,161 @@
 <template>
   <q-page class="q-py-lg bg-grey-1">
-    <!-- Hero section -->
-    <div class="hero-section q-mb-xl">
-      <div class="row justify-center">
-        <div class="col-12 col-md-10 q-px-md">
-          <q-card flat class="hero-card q-pa-xl text-white text-center">
-            <div class="text-h3 text-weight-light q-mb-sm">Znajdź swój wymarzony samochód</div>
-            <div class="text-subtitle1 q-mb-xl">{{ totalListings.toLocaleString() }} ogłoszeń w naszej bazie</div>
-            
-            <q-card class="search-form q-pa-md">
-              <div class="row q-col-gutter-md items-center">
-                <div class="col-12 col-sm">
-                  <q-input 
-                    outlined 
-                    v-model="searchText" 
-                    placeholder="Czego szukasz?"
-                    class="search-input"
-                    dense
-                    clearable
-                    clear-icon="close"
-                    :input-class="'text-center'"
-                    hide-bottom-space
-                  >
-                    <template v-slot:prepend>
-                      <q-icon name="search" color="grey-7" />
-                    </template>
-                  </q-input>
-                </div>
-                <div class="col-12 col-sm-auto">
-                  <q-btn 
-                    color="primary"
-                    class="full-width search-btn"
-                    label="Szukaj"
-                    no-caps
-                    unelevated
-                    @click="searchCars"
-                  />
-                </div>
-              </div>
-            </q-card>
-          </q-card>
-        </div>
-      </div>
+    <!-- Loading state -->
+    <div v-if="loading" class="row justify-center q-mt-xl">
+      <q-spinner color="primary" size="3em" />
     </div>
 
-    <!-- Quick filters -->
-    <div class="row justify-center q-mb-xl">
-      <div class="col-12 col-md-10 q-px-md">
-        <div class="row q-col-gutter-md">
-          <div v-for="category in quickCategories" :key="category.name" class="col-6 col-sm-3">
-            <q-card 
-              class="quick-filter-card cursor-pointer" 
-              @click="goToCategory(category)"
-              flat
-              bordered
-            >
-              <q-card-section class="text-center">
-                <q-icon :name="category.icon" color="primary" size="md" />
-                <div class="text-subtitle1 q-mt-sm">{{ category.name }}</div>
-                <div class="text-caption text-grey">{{ category.count }} ogłoszeń</div>
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
-      </div>
+    <!-- Error state -->
+    <div v-else-if="error" class="row justify-center q-mt-xl">
+      <q-banner class="bg-negative text-white">
+        {{ error }}
+      </q-banner>
     </div>
 
-    <!-- Latest listings -->
-    <div class="listings-section q-px-md">
-      <div class="row justify-center">
-        <div class="col-12 col-md-10">
-          <div class="row items-center justify-between q-mb-lg">
-            <div class="text-h5">Najnowsze ogłoszenia</div>
-            <q-btn 
-              flat 
-              color="primary" 
-              label="Zobacz wszystkie" 
-              no-caps
-              @click="goToListings" 
-            />
-          </div>
-          <div class="row q-col-gutter-md">
-            <div v-for="listing in latestListings" :key="listing.id" class="col-12 col-sm-6 col-md-4">
-              <q-card class="listing-card">
-                <q-img 
-                  :src="listing.image" 
-                  :ratio="16/9"
-                >
-                  <div class="absolute-bottom-right q-pa-xs">
-                    <q-btn
-                      round
-                      color="white"
-                      text-color="grey-8"
-                      icon="favorite_border"
-                      size="sm"
-                      flat
+    <!-- Content -->
+    <template v-else>
+      <!-- Hero section -->
+      <div class="hero-section q-mb-xl">
+        <div class="row justify-center">
+          <div class="col-12 col-md-10 q-px-md">
+            <q-card flat class="hero-card q-pa-xl text-white text-center">
+              <div class="text-h3 text-weight-light q-mb-sm">Znajdź swój wymarzony samochód</div>
+              <div class="text-subtitle1 q-mb-xl">{{ totalListings.toLocaleString() }} ogłoszeń w naszej bazie</div>
+              
+              <q-card class="search-form q-pa-md">
+                <div class="row q-col-gutter-md items-center">
+                  <div class="col-12 col-sm">
+                    <q-input 
+                      outlined 
+                      v-model="searchText" 
+                      placeholder="Czego szukasz?"
+                      class="search-input"
                       dense
+                      clearable
+                      clear-icon="close"
+                      :input-class="'text-center'"
+                      hide-bottom-space
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="search" color="grey-7" />
+                      </template>
+                    </q-input>
+                  </div>
+                  <div class="col-12 col-sm-auto">
+                    <q-btn 
+                      color="primary"
+                      class="full-width search-btn"
+                      label="Szukaj"
+                      no-caps
+                      unelevated
+                      @click="searchCars"
                     />
                   </div>
-                </q-img>
-                <q-card-section>
-                  <div class="text-subtitle1 ellipsis">{{ listing.title }}</div>
-                  <div class="text-h6 text-weight-bold text-primary q-mt-sm">
-                    {{ formatPrice(listing.price) }} PLN
-                  </div>
-                  <div class="row items-center justify-between q-mt-sm text-grey-7">
-                    <div class="text-caption">
-                      <q-icon name="place" size="xs"/> {{ listing.location }}
-                    </div>
-                    <div class="text-caption">
-                      {{ listing.date }}
-                    </div>
-                  </div>
+                </div>
+              </q-card>
+            </q-card>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick filters -->
+      <div class="row justify-center q-mb-xl">
+        <div class="col-12 col-md-10 q-px-md">
+          <div class="row q-col-gutter-md">
+            <div v-for="category in quickCategories" :key="category.name" class="col-6 col-sm-3">
+              <q-card 
+                class="quick-filter-card cursor-pointer" 
+                @click="goToCategory(category)"
+                flat
+                bordered
+              >
+                <q-card-section class="text-center">
+                  <q-icon :name="category.icon" color="primary" size="md" />
+                  <div class="text-subtitle1 q-mt-sm">{{ category.name }}</div>
+                  <div class="text-caption text-grey">{{ category.count }} ogłoszeń</div>
                 </q-card-section>
               </q-card>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Latest listings -->
+      <div class="listings-section q-px-md">
+        <div class="row justify-center">
+          <div class="col-12 col-md-10">
+            <div class="row items-center justify-between q-mb-lg">
+              <div class="text-h5">Najnowsze ogłoszenia</div>
+              <q-btn 
+                flat 
+                color="primary" 
+                label="Zobacz wszystkie" 
+                no-caps
+                @click="goToListings" 
+              />
+            </div>
+            <div class="row q-col-gutter-md">
+              <div v-for="listing in latestListings" :key="listing.id" class="col-12 col-sm-6 col-md-4">
+                <q-card class="listing-card cursor-pointer" @click="goToListing(listing)">
+                  <q-img 
+                    :src="listing.image" 
+                    :ratio="16/9"
+                  >
+                    <div class="absolute-bottom-right q-pa-xs">
+                      <q-btn
+                        round
+                        color="white"
+                        text-color="grey-8"
+                        icon="favorite_border"
+                        size="sm"
+                        flat
+                        dense
+                        @click.stop="toggleFavorite(listing)"
+                      />
+                    </div>
+                  </q-img>
+                  <q-card-section>
+                    <div class="text-subtitle1 ellipsis">{{ listing.title }}</div>
+                    <div class="text-h6 text-weight-bold text-primary q-mt-sm">
+                      {{ formatPrice(listing.price) }} PLN
+                    </div>
+                    <div class="row items-center justify-between q-mt-sm text-grey-7">
+                      <div class="text-caption">
+                        <q-icon name="place" size="xs"/> {{ listing.location }}
+                      </div>
+                      <div class="text-caption">
+                        {{ listing.date }}
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
   </q-page>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import carService from '../services/carService';
 
 const router = useRouter();
-const totalListings = 345678;
+const totalListings = ref(0);
+const latestListings = ref([]);
+const loading = ref(true);
+const error = ref(null);
 
 // Stats data
-const stats = [
-  { label: 'Aktywnych ogłoszeń', value: '345,678' },
-  { label: 'Zarejestrowanych użytkowników', value: '125,430' },
-  { label: 'Sprzedanych pojazdów', value: '89,254' },
-  { label: 'Średni czas sprzedaży', value: '15 dni' }
-];
+const stats = ref([
+  { label: 'Aktywnych ogłoszeń', value: '0' },
+  { label: 'Zarejestrowanych użytkowników', value: '0' },
+  { label: 'Sprzedanych pojazdów', value: '0' },
+  { label: 'Średni czas sprzedaży', value: '0 dni' }
+]);
 
 // Filters state
 const filters = reactive({
@@ -155,49 +175,35 @@ const yearRanges = ['Dowolny rok', 'do 2000', '2000 - 2010', '2010 - 2020', 'pow
 const categories = [
   { 
     name: 'Samochody osobowe', 
-    count: '234,567', 
+    count: '0', 
     img: 'https://source.unsplash.com/random/800x600?luxury,car',
     gradient: 'bg-gradient-blue'
   },
   { 
     name: 'SUV i Crossover', 
-    count: '45,678', 
+    count: '0', 
     img: 'https://source.unsplash.com/random/800x600?suv',
     gradient: 'bg-gradient-green'
   },
   { 
     name: 'Samochody sportowe', 
-    count: '12,345', 
+    count: '0', 
     img: 'https://source.unsplash.com/random/800x600?sports,car',
     gradient: 'bg-gradient-red'
   },
   { 
     name: 'Samochody elektryczne', 
-    count: '5,678', 
+    count: '0', 
     img: 'https://source.unsplash.com/random/800x600?electric,car',
     gradient: 'bg-gradient-purple'
   }
 ];
 
 const quickCategories = [
-  { name: 'Osobowe', count: '234,567', icon: 'directions_car' },
-  { name: 'Dostawcze', count: '45,678', icon: 'local_shipping' },
-  { name: 'Motocykle', count: '12,345', icon: 'two_wheeler' },
-  { name: 'Części', count: '89,254', icon: 'build' }
-];
-
-const latestListings = [
-  {
-    id: 1,
-    title: 'BMW Seria 3',
-    price: '89900',
-    location: 'Warszawa',
-    date: 'Dzisiaj',
-    image: 'https://source.unsplash.com/random/400x300?bmw',
-    year: '2020',
-    mileage: '15,000'
-  },
-  // ... więcej ogłoszeń
+  { name: 'Osobowe', count: '0', icon: 'directions_car' },
+  { name: 'Dostawcze', count: '0', icon: 'local_shipping' },
+  { name: 'Motocykle', count: '0', icon: 'two_wheeler' },
+  { name: 'Części', count: '0', icon: 'build' }
 ];
 
 // Helper functions
@@ -205,11 +211,59 @@ const formatPrice = (price) => {
   return new Intl.NumberFormat('pl-PL').format(price);
 };
 
-const filterBrands = (val, update) => {
-  // ... implement brand filtering logic ...
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const today = new Date();
+  const diffTime = Math.abs(today - date);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Dzisiaj';
+  if (diffDays === 1) return 'Wczoraj';
+  if (diffDays < 7) return `${diffDays} dni temu`;
+  return date.toLocaleDateString('pl-PL');
 };
 
 // Methods
+const fetchCars = async () => {
+  try {
+    loading.value = true;
+    const cars = await carService.getCars();
+    latestListings.value = cars.map(car => ({
+      id: car.id,
+      title: `${car.brand} ${car.model}`,
+      price: car.price,
+      location: 'Warszawa', // Możesz dodać pole location do modelu Car
+      date: formatDate(car.created_at),
+      image: car.image || 'https://source.unsplash.com/random/400x300?car',
+      year: car.year,
+      mileage: car.mileage
+    }));
+    
+    totalListings.value = cars.length;
+    stats.value[0].value = cars.length.toLocaleString();
+    
+    // Aktualizacja statystyk kategorii
+    const categoriesCount = cars.reduce((acc, car) => {
+      if (car.price < 20000) acc.budget++;
+      else if (car.price < 50000) acc.mid++;
+      else if (car.price < 100000) acc.premium++;
+      else acc.luxury++;
+      return acc;
+    }, { budget: 0, mid: 0, premium: 0, luxury: 0 });
+    
+    quickCategories[0].count = categoriesCount.budget.toLocaleString();
+    quickCategories[1].count = categoriesCount.mid.toLocaleString();
+    quickCategories[2].count = categoriesCount.premium.toLocaleString();
+    quickCategories[3].count = categoriesCount.luxury.toLocaleString();
+    
+  } catch (err) {
+    error.value = 'Wystąpił błąd podczas ładowania danych. Spróbuj ponownie później.';
+    console.error('Error fetching cars:', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
 const searchCars = () => {
   console.log('Searching with filters:', filters);
 };
@@ -229,6 +283,11 @@ const goToListings = () => {
 const toggleFavorite = (listing) => {
   console.log('Toggle favorite:', listing.id);
 };
+
+// Lifecycle hooks
+onMounted(() => {
+  fetchCars();
+});
 </script>
 
 <style scoped>
