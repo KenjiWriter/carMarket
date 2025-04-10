@@ -1,6 +1,16 @@
 import axios from 'axios';
+import authService from './authService';
 
 const API_URL = '/cars';
+
+// Konfiguracja axios z interceptorem dla tokenu
+axios.interceptors.request.use(config => {
+    const token = authService.getToken();
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
 
 export default {
     async getCars() {

@@ -1,10 +1,15 @@
 <template>
     <q-layout view="hHh LpR lff">
-      <TopBar @toggle-drawer="toggleDrawer" />
-      <Sidebar v-model="drawer" />
+      <TopBar @open-auth-modal="openAuthModal" />
+      <Sidebar v-model="drawer" @open-auth-modal="openAuthModal" />
       <q-page-container class="bg-grey-1">
         <router-view />
       </q-page-container>
+
+      <AuthModal
+        v-model="showAuthModal"
+        @authenticated="handleAuthenticated"
+      />
     </q-layout>
 </template>
 
@@ -12,11 +17,17 @@
 import { ref } from 'vue';
 import TopBar from './TopBar.vue';
 import Sidebar from './Sidebar.vue';
+import AuthModal from './AuthModal.vue';
 
 const drawer = ref(false);
+const showAuthModal = ref(false);
 
-const toggleDrawer = () => {
-  drawer.value = !drawer.value;
+const openAuthModal = () => {
+  showAuthModal.value = true;
+};
+
+const handleAuthenticated = () => {
+  showAuthModal.value = false;
 };
 </script>
 
