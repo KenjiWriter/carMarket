@@ -4,102 +4,68 @@
     v-model="drawer"
     side="left"
     bordered
-    class="modern-sidebar"
-    :width="280"
+    class="modern-sidebar q-drawer--professional"
+    :width="250"
   >
     <q-scroll-area class="fit">
       <div class="q-pa-md text-center">
-        <q-avatar size="80px" class="q-mb-sm">
-          <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
-        </q-avatar>
-        <div class="text-weight-bold">Car Market</div>
-        <div class="text-caption text-grey">Panel nawigacyjny</div>
+        <div class="text-h6 text-weight-bold company-title">Car Market</div>
       </div>
 
-      <q-list padding separator>
+      <q-list padding class="menu-list">
         <!-- Menu główne -->
-        <q-item-label header class="text-weight-bold text-primary q-mt-md">
-          Menu główne
-        </q-item-label>
-        
         <q-item clickable v-ripple to="/" class="menu-item">
           <q-item-section avatar>
-            <q-icon name="home" color="primary"/>
+            <q-icon name="home" color="grey-7"/>
           </q-item-section>
-          <q-item-section>Strona główna</q-item-section>
+          <q-item-section>Główna</q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/oferty" class="menu-item">
+        <q-item clickable v-ripple to="/oferty" class="menu-item search-item">
           <q-item-section avatar>
-            <q-icon name="directions_car" color="secondary"/>
+            <q-icon name="search" color="primary"/>
           </q-item-section>
           <q-item-section>
-            <q-item-label>Przeglądaj oferty</q-item-label>
-            <q-item-label caption>Wszystkie ogłoszenia</q-item-label>
+            <div class="search-text">Ogłoszenia</div>
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/dodaj" class="menu-item q-mb-md">
+        <q-item clickable v-ripple to="/dodaj" class="menu-item">
           <q-item-section avatar>
-            <q-icon name="add_circle" color="positive"/>
+            <q-icon name="add_box" color="grey-7"/>
           </q-item-section>
-          <q-item-section>
-            <q-item-label>Dodaj ogłoszenie</q-item-label>
-            <q-item-label caption>Sprzedaj swój samochód</q-item-label>
-          </q-item-section>
+          <q-item-section>Dodaj ogłoszenie</q-item-section>
         </q-item>
 
-        <!-- Kategorie -->
-        <q-item-label header class="text-weight-bold text-primary q-mt-md">
-          Kategorie pojazdów
-        </q-item-label>
+        <q-separator class="q-my-md" />
 
-        <q-expansion-item
-          icon="time_to_leave"
-          label="Samochody osobowe"
-          caption="Najpopularniejsza kategoria"
-          expand-separator
-        >
-          <q-list class="q-pl-lg">
-            <q-item clickable v-ripple dense class="menu-item">
-              <q-item-section>SUV</q-item-section>
-            </q-item>
-            <q-item clickable v-ripple dense class="menu-item">
-              <q-item-section>Sedan</q-item-section>
-            </q-item>
-            <q-item clickable v-ripple dense class="menu-item">
-              <q-item-section>Kombi</q-item-section>
-            </q-item>
-          </q-list>
-        </q-expansion-item>
-
-        <q-expansion-item
-          icon="local_shipping"
-          label="Samochody dostawcze"
-          expand-separator
-        >
-          <q-list class="q-pl-lg">
-            <q-item clickable v-ripple dense class="menu-item">
-              <q-item-section>Do 3.5t</q-item-section>
-            </q-item>
-            <q-item clickable v-ripple dense class="menu-item">
-              <q-item-section>Powyżej 3.5t</q-item-section>
-            </q-item>
-          </q-list>
-        </q-expansion-item>
+        <!-- Uproszczone kategorie -->
+        <q-item clickable v-ripple class="menu-item">
+          <q-item-section avatar>
+            <q-icon name="directions_car" color="grey-7"/>
+          </q-item-section>
+          <q-item-section>Osobowe</q-item-section>
+        </q-item>
 
         <q-item clickable v-ripple class="menu-item">
           <q-item-section avatar>
-            <q-icon name="two_wheeler" color="orange"/>
+            <q-icon name="local_shipping" color="grey-7"/>
+          </q-item-section>
+          <q-item-section>Dostawcze</q-item-section>
+        </q-item>
+
+        <q-item clickable v-ripple class="menu-item">
+          <q-item-section avatar>
+            <q-icon name="two_wheeler" color="grey-7"/>
           </q-item-section>
           <q-item-section>Motocykle</q-item-section>
         </q-item>
 
         <q-item clickable v-ripple class="menu-item">
           <q-item-section avatar>
-            <q-icon name="build" color="grey"/>
+            <q-icon name="build" color="grey-7"/>
           </q-item-section>
-          <q-item-section>Części i akcesoria</q-item-section>
+          <q-item-section>Części</q-item-section>
         </q-item>
       </q-list>
     </q-scroll-area>
@@ -114,23 +80,89 @@ const drawer = ref(true);
 <style scoped>
 .modern-sidebar {
   background: #f8f9fa;
+  box-shadow: 1px 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.company-title {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+}
+
+.menu-list {
+  padding-top: 8px;
 }
 
 .menu-item {
   border-radius: 8px;
-  margin: 0 8px;
+  margin: 4px 8px;
+  min-height: 44px;
+  color: #445566;
   transition: all 0.3s ease;
 }
 
 .menu-item:hover {
-  background: rgba(0,0,0,0.05);
+  background: #e9ecef;
+  transform: translateX(2px);
+}
+
+.search-item {
+  background: #f1f5f9;
+  margin: 8px 8px;
+}
+
+.search-item:hover {
+  background: #e2e8f0;
+}
+
+.search-text {
+  font-weight: 500;
+  color: #334155;
+}
+
+.search-item.q-router-link-active {
+  background: #2563eb15;
+  border-left: 3px solid #2563eb;
 }
 
 .q-item.menu-item.q-router-link-active {
-  background: rgba(25, 118, 210, 0.1);
+  background: #3498db15;
+  color: #2c3e50;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.q-list.separator > .q-item-type + .q-item-type {
-  border-top: 1px solid rgba(0,0,0,0.05);
+.q-item__section--avatar {
+  min-width: 40px;
+}
+
+.q-item__section--avatar .q-icon {
+  font-size: 1.25rem;
+  color: #3498db;
+}
+
+.q-separator {
+  background: #dee2e6;
+  height: 1px;
+  opacity: 0.5;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 </style>
