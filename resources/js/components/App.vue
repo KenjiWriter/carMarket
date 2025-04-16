@@ -1,4 +1,3 @@
-<!-- filepath: c:\xampp\htdocs\carMarket\src\App.vue -->
 <template>
   <div id="app" class="car-market-app">
     <Header 

@@ -30,12 +30,22 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/dodaj" class="menu-item">
-          <q-item-section avatar>
-            <q-icon name="add_box" color="grey-7"/>
-          </q-item-section>
-          <q-item-section>Dodaj ogłoszenie</q-item-section>
-        </q-item>
+        <template v-if="isAuthenticated">
+          <q-item clickable v-ripple to="/dodaj" class="menu-item">
+            <q-item-section avatar>
+              <q-icon name="add_box" color="grey-7"/>
+            </q-item-section>
+            <q-item-section>Dodaj ogłoszenie</q-item-section>
+          </q-item>
+        </template>
+        <template v-else>
+           <q-item clickable v-ripple @click="openAuthModal" class="menu-item">
+            <q-item-section avatar>
+              <q-icon name="login" color="grey-7"/>
+            </q-item-section>
+            <q-item-section>Logowanie/Rejestracja</q-item-section>
+          </q-item>
+        </template>
 
         <q-separator class="q-my-md" />
 
@@ -73,8 +83,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import authService from '../services/authService';
+
 const drawer = ref(true);
+
+const emit = defineEmits(['update:modelValue', 'open-auth-modal']);
+
+const isAuthenticated = computed(() => authService.isAuthenticated());
+
+const openAuthModal = () => {
+  emit('open-auth-modal');
+};
 </script>
 
 <style scoped>
