@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import MainLayout from '../components/MainLayout.vue';
-import Home from '../components/Home.vue';
+import HomePage from '../pages/HomePage.vue';
 
-// Tymczasowo używamy Home.vue jako placeholder dla innych podstron
+// Tymczasowo używamy HomePage jako placeholder dla innych podstron
 const routes = [
   {
     path: '/',
@@ -10,15 +10,15 @@ const routes = [
     children: [
       {
         path: '',
-        component: Home
+        component: HomePage
       },
       {
         path: 'oferty',
-        component: Home // możesz później podmienić na Oferty.vue
+        component: HomePage // możesz później podmienić na Oferty.vue
       },
       {
         path: 'dodaj',
-        component: Home // możesz później podmienić na Dodaj.vue
+        component: HomePage // możesz później podmienić na Dodaj.vue
       }
     ]
   }

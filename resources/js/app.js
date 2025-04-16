@@ -11,13 +11,13 @@ const app = createApp(App);
 app.use(Quasar, {
   config: {
     brand: {
-      primary: '#FF6B6B',
-      secondary: '#4ECDC4',
-      accent: '#FFE66D',
-      positive: '#2ECC71',
-      negative: '#E74C3C',
-      info: '#3498DB',
-      warning: '#F1C40F'
+      primary: '#1D3557',       
+      secondary: '#26A69A',     
+      accent: '#9C27B0',        
+      positive: '#21BA45',
+      negative: '#C10015',
+      info: '#31CCEC',
+      warning: '#F2C037'
     }
   }
 });

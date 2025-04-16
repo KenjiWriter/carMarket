@@ -11,7 +11,7 @@
 <script setup>
 import { ref } from 'vue';
 import TopBar from './TopBar.vue';
-import Sidebar from './Sidebar.vue';
+import Sidebar from './Sidebar.vue'; 
 
 const drawer = ref(false);
 
