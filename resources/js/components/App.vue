@@ -88,6 +88,7 @@ import CarList from './CarList.vue';
 import AdDetailModal from './AdDetailModal.vue';
 import AddAdvertisement from './AddAdvertisement.vue';
 import Footer from './Footer.vue';
+import axios from 'axios';
 
 export default {
   name: 'App',
@@ -101,83 +102,7 @@ export default {
   },
   data() {
     return {
-      cars: [
-        { 
-          id: 1, 
-          title: 'Ford Focus 2018', 
-          price: '55 000', 
-          location: 'Warszawa', 
-          image: 'https://via.placeholder.com/300x200?text=Ford+Focus', 
-          date: 'Dzisiaj 14:30',
-          images: ['https://via.placeholder.com/600x400?text=Ford+Focus', 'https://via.placeholder.com/600x400?text=Ford+Focus+Interior'],
-          details: {
-            'Marka': 'Ford',
-            'Model': 'Focus',
-            'Rok produkcji': '2018',
-            'Przebieg': '75 000 km',
-            'Pojemność skokowa': '1.6L',
-            'Rodzaj paliwa': 'Benzyna'
-          },
-          description: 'Ford Focus w świetnym stanie technicznym. Regularnie serwisowany, pierwszy właściciel, bezwypadkowy.',
-          seller: {
-            name: 'Adam Nowak',
-            memberSince: 'Maj 2020',
-            rating: 4.9,
-            reviewCount: 15,
-            phone: '+48 555 123 456'
-          }
-        },
-        { 
-          id: 2, 
-          title: 'Opel Astra 2016', 
-          price: '42 000', 
-          location: 'Kraków', 
-          image: 'https://via.placeholder.com/300x200?text=Opel+Astra', 
-          date: 'Wczoraj 10:15',
-          images: ['https://via.placeholder.com/600x400?text=Opel+Astra', 'https://via.placeholder.com/600x400?text=Opel+Astra+Interior'],
-          details: {
-            'Marka': 'Opel',
-            'Model': 'Astra',
-            'Rok produkcji': '2016',
-            'Przebieg': '98 000 km',
-            'Pojemność skokowa': '1.4L',
-            'Rodzaj paliwa': 'Benzyna'
-          },
-          description: 'Opel Astra w dobrym stanie, regularnie serwisowany. Drugi właściciel, garażowany.',
-          seller: {
-            name: 'Piotr Kowalski',
-            memberSince: 'Styczeń 2019',
-            rating: 4.7,
-            reviewCount: 8,
-            phone: '+48 555 789 012'
-          }
-        },
-        { 
-          id: 3, 
-          title: 'Volkswagen Golf 2019', 
-          price: '68 000', 
-          location: 'Gdańsk', 
-          image: 'https://via.placeholder.com/300x200?text=VW+Golf', 
-          date: '2 dni temu',
-          images: ['https://via.placeholder.com/600x400?text=VW+Golf', 'https://via.placeholder.com/600x400?text=VW+Golf+Interior'],
-          details: {
-            'Marka': 'Volkswagen',
-            'Model': 'Golf',
-            'Rok produkcji': '2019',
-            'Przebieg': '45 000 km',
-            'Pojemność skokowa': '1.5L',
-            'Rodzaj paliwa': 'Benzyna'
-          },
-          description: 'Volkswagen Golf w idealnym stanie, pełna dokumentacja serwisowa, pierwszy właściciel.',
-          seller: {
-            name: 'Marta Wiśniewska',
-            memberSince: 'Czerwiec 2017',
-            rating: 4.9,
-            reviewCount: 22,
-            phone: '+48 555 345 678'
-          }
-        }
-      ],
+      cars: [],
       showLoginModal: false,
       showRegisterModal: false,
       showDetailModal: false,
@@ -186,6 +111,57 @@ export default {
     };
   },
   methods: {
+    async fetchCars() {
+      try {
+        const response = await axios.get('/cars');
+        this.cars = response.data.map(car => {
+          return {
+            id: car.id,
+            title: `${car.brand} ${car.model} ${car.year}`,
+            price: this.formatPrice(car.price),
+            location: 'Warszawa', // Default location as it's not in API
+            image: car.image ? `./images/${car.image}` : `https://via.placeholder.com/300x200?text=${car.brand}+${car.model}`,
+            date: this.formatDate(car.created_at),
+            images: [
+              car.image ? `./images/${car.image}` : `https://via.placeholder.com/600x400?text=${car.brand}+${car.model}`, 
+              `https://via.placeholder.com/600x400?text=${car.brand}+${car.model}+Interior`
+            ],
+            details: {
+              'Marka': car.brand,
+              'Model': car.model,
+              'Rok produkcji': car.year.toString(),
+              'Przebieg': `${car.mileage} km`,
+              'Rodzaj paliwa': car.fuel_type
+            },
+            description: car.description,
+            seller: {
+              name: 'Sprzedawca',
+              memberSince: 'Styczeń 2023',
+              rating: 4.8,
+              reviewCount: 12,
+              phone: '+48 555 123 456'
+            }
+          };
+        });
+        console.log('Fetched cars:', this.cars);
+      } catch (error) {
+        console.error('Error fetching cars:', error);
+      }
+    },
+    formatPrice(price) {
+      return Number(price).toLocaleString('pl-PL');
+    },
+    formatDate(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return 'Dzisiaj';
+      if (diffDays === 1) return 'Wczoraj';
+      if (diffDays < 7) return `${diffDays} dni temu`;
+      return date.toLocaleDateString('pl-PL');
+    },
     showCarDetails(car) {
       console.log('Opening car details:', car.title);
       this.selectedCar = car;
@@ -236,6 +212,9 @@ export default {
       console.log('Closing add advertisement modal');
       this.showAddAdvertModal = false;
     }
+  },
+  mounted() {
+    this.fetchCars();
   }
 }
 </script>
