@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="car-market-app">
     <Header 
-      @open-login="openLoginModal"
+      @open-login="openAuthModal"
       @open-add-advert="openAddAdvertModal" 
     />
     <main class="main-content">
@@ -25,59 +25,8 @@
       @close="closeAddAdvertModal"
     />
 
-    <!-- Login Modal -->
-    <div v-if="showLoginModal" class="modal-overlay" @click.self="closeLoginModal">
-      <div class="modal-content">
-        <h2>Logowanie</h2>
-        <!-- Placeholder for Login Form -->
-        <form @submit.prevent="handleLogin">
-          <div class="form-group">
-            <q-icon name="email" class="form-icon" />
-            <input type="email" placeholder="Email" required>
-          </div>
-          <div class="form-group">
-            <q-icon name="lock" class="form-icon" />
-            <input type="password" placeholder="Hasło" required>
-          </div>
-          <button type="submit">Zaloguj się</button>
-        </form>
-        <p>Nie masz konta? <button @click="switchToRegister" class="link-button">Zarejestruj się</button></p>
-        <button @click="closeLoginModal" class="close-button">
-          <q-icon name="close" />
-        </button>
-      </div>
-    </div>
-
-    <!-- Registration Modal -->
-    <div v-if="showRegisterModal" class="modal-overlay" @click.self="closeRegisterModal">
-      <div class="modal-content">
-        <h2>Rejestracja</h2>
-        <!-- Placeholder for Registration Form -->
-        <form @submit.prevent="handleRegister">
-          <div class="form-group">
-            <q-icon name="person" class="form-icon" />
-            <input type="text" placeholder="Nazwa użytkownika" required>
-          </div>
-          <div class="form-group">
-            <q-icon name="email" class="form-icon" />
-            <input type="email" placeholder="Email" required>
-          </div>
-          <div class="form-group">
-            <q-icon name="lock" class="form-icon" />
-            <input type="password" placeholder="Hasło" required>
-          </div>
-          <div class="form-group">
-            <q-icon name="lock" class="form-icon" />
-            <input type="password" placeholder="Potwierdź hasło" required>
-          </div>
-          <button type="submit">Zarejestruj się</button>
-        </form>
-        <p>Masz już konto? <button @click="switchToLogin" class="link-button">Zaloguj się</button></p>
-        <button @click="closeRegisterModal" class="close-button">
-          <q-icon name="close" />
-        </button>
-      </div>
-    </div>
+    <!-- Authentication Modal -->
+    <AuthModal v-model="showAuthModal" @authenticated="onAuthenticated" />
   </div>
 </template>
 
@@ -87,6 +36,8 @@ import SearchBar from './SearchBar.vue';
 import CarList from './CarList.vue';
 import AdDetailModal from './AdDetailModal.vue';
 import AddAdvertisement from './AddAdvertisement.vue';
+import AuthModal from './AuthModal.vue';
+import authService from '../services/authService';
 import Footer from './Footer.vue';
 import axios from 'axios';
 
@@ -98,16 +49,18 @@ export default {
     CarList,
     AdDetailModal,
     AddAdvertisement,
+    AuthModal,
     Footer
   },
   data() {
     return {
       cars: [],
-      showLoginModal: false,
-      showRegisterModal: false,
+      showAuthModal: false,
       showDetailModal: false,
       showAddAdvertModal: false,
-      selectedCar: null
+      selectedCar: null,
+      isAuthenticated: false,
+      currentUser: null
     };
   },
   methods: {
@@ -174,35 +127,22 @@ export default {
         this.selectedCar = null;
       }, 300);
     },
-    openLoginModal() {
-      this.showLoginModal = true;
-      this.showRegisterModal = false;
+    openAuthModal() {
+      this.showAuthModal = true;
     },
-    closeLoginModal() {
-      this.showLoginModal = false;
+    onAuthenticated() {
+      // Handle successful authentication
+      this.checkAuthStatus();
+      if (this.$q) {
+        this.$q.notify({
+          color: 'positive',
+          message: 'Zalogowano pomyślnie'
+        });
+      }
     },
-    openRegisterModal() {
-      this.showRegisterModal = true;
-      this.showLoginModal = false;
-    },
-    closeRegisterModal() {
-      this.showRegisterModal = false;
-    },
-    switchToRegister() {
-      this.closeLoginModal();
-      this.openRegisterModal();
-    },
-    switchToLogin() {
-      this.closeRegisterModal();
-      this.openLoginModal();
-    },
-    handleLogin() {
-      console.log('Login attempt');
-      this.closeLoginModal();
-    },
-    handleRegister() {
-      console.log('Register attempt');
-      this.closeRegisterModal();
+    checkAuthStatus() {
+      this.isAuthenticated = authService.isAuthenticated();
+      this.currentUser = authService.getCurrentUser();
     },
     openAddAdvertModal() {
       console.log('Opening add advertisement modal');
@@ -215,9 +155,35 @@ export default {
   },
   mounted() {
     this.fetchCars();
+    this.checkAuthStatus();
+    authService.initializeAuth();
   }
 }
 </script>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  color: #2c3e50;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+}
+</style>
 
 <style>
 body {

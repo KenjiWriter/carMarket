@@ -1,158 +1,178 @@
 <template>
-  <q-dialog v-model="showModal" persistent>
-    <q-card style="min-width: 350px">
-      <q-card-section class="row items-center">
-        <div class="text-h6">{{ isLogin ? 'Logowanie' : 'Rejestracja' }}</div>
-        <q-space />
-        <q-btn icon="close" flat round dense v-close-popup />
-      </q-card-section>
+  <div id="auth" class="car-market-app">
+    
 
-      <q-card-section>
-        <q-form @submit="handleSubmit" class="q-gutter-md">
-          <q-input
-            v-model="form.email"
-            label="Email"
-            type="email"
-            :rules="[val => !!val || 'Email jest wymagany']"
-            dense
-            outlined
-          />
+   
 
-          <q-input
-            v-model="form.password"
-            label="Hasło"
-            :type="isPasswordVisible ? 'text' : 'password'"
-            :rules="[val => !!val || 'Hasło jest wymagane']"
-            dense
-            outlined
-          >
-            <template v-slot:append>
-              <q-icon
-                :name="isPasswordVisible ? 'visibility_off' : 'visibility'"
-                class="cursor-pointer"
-                @click="isPasswordVisible = !isPasswordVisible"
-              />
-            </template>
-          </q-input>
-
-          <template v-if="!isLogin">
-            <q-input
-              v-model="form.name"
-              label="Imię"
-              :rules="[val => !!val || 'Imię jest wymagane']"
-              dense
-              outlined
-            />
-
-            <q-input
-              v-model="form.password_confirmation"
-              label="Potwierdź hasło"
-              :type="isPasswordVisible ? 'text' : 'password'"
-              :rules="[
-                val => !!val || 'Potwierdzenie hasła jest wymagane',
-                val => val === form.password || 'Hasła muszą być identyczne'
-              ]"
-              dense
-              outlined
-            />
-          </template>
-
-          <div class="text-center q-mt-md">
-            <q-btn
-              type="submit"
-              color="primary"
-              :label="isLogin ? 'Zaloguj się' : 'Zarejestruj się'"
-              class="full-width"
-              :loading="loading"
-            />
+    <!-- Login Modal -->
+    <div v-if="showLoginModal" class="modal-overlay" @click.self="closeLoginModal">
+      <div class="modal-content">
+        <h2>Logowanie</h2>
+        <form @submit.prevent="handleLogin">
+          <div v-if="loginError" class="error-message">{{ loginError }}</div>
+          <div class="form-group">
+            <q-icon name="email" class="form-icon" />
+            <input type="email" v-model="loginForm.email" placeholder="Email" required>
           </div>
-        </q-form>
-      </q-card-section>
+          <div class="form-group">
+            <q-icon name="lock" class="form-icon" />
+            <input type="password" v-model="loginForm.password" placeholder="Hasło" required>
+          </div>
+          <button type="submit" :disabled="isLoading">
+            {{ isLoading ? 'Logowanie...' : 'Zaloguj się' }}
+          </button>
+        </form>
+        <p>Nie masz konta? <button @click="switchToRegister" class="link-button">Zarejestruj się</button></p>
+        <button @click="closeLoginModal" class="close-button">
+          <q-icon name="close" />
+        </button>
+      </div>
+    </div>
 
-      <q-card-actions align="center" class="q-pb-md">
-        <q-btn
-          flat
-          color="primary"
-          :label="isLogin ? 'Nie masz konta? Zarejestruj się' : 'Masz już konto? Zaloguj się'"
-          @click="toggleMode"
-        />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    <!-- Registration Modal -->
+    <div v-if="showRegisterModal" class="modal-overlay" @click.self="closeRegisterModal">
+      <div class="modal-content">
+        <h2>Rejestracja</h2>
+        <form @submit.prevent="handleRegister">
+          <div v-if="registerError" class="error-message">{{ registerError }}</div>
+          <div class="form-group">
+            <q-icon name="person" class="form-icon" />
+            <input type="text" v-model="registerForm.name" placeholder="Nazwa użytkownika" required>
+          </div>
+          <div class="form-group">
+            <q-icon name="email" class="form-icon" />
+            <input type="email" v-model="registerForm.email" placeholder="Email" required>
+          </div>
+          <div class="form-group">
+            <q-icon name="lock" class="form-icon" />
+            <input type="password" v-model="registerForm.password" placeholder="Hasło" required>
+          </div>
+          <div class="form-group">
+            <q-icon name="lock" class="form-icon" />
+            <input type="password" v-model="registerForm.password_confirmation" placeholder="Potwierdź hasło" required>
+          </div>
+          <button type="submit" :disabled="isLoading">
+            {{ isLoading ? 'Rejestracja...' : 'Zarejestruj się' }}
+          </button>
+        </form>
+        <p>Masz już konto? <button @click="switchToLogin" class="link-button">Zaloguj się</button></p>
+        <button @click="closeRegisterModal" class="close-button">
+          <q-icon name="close" />
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script setup>
-import { ref, reactive, watch } from 'vue';
-import { useQuasar } from 'quasar';
+<script>
+import { ref, computed, watch } from 'vue';
 import authService from '../services/authService';
 
-const $q = useQuasar();
-const emit = defineEmits(['authenticated', 'update:modelValue']);
-
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true
-  }
-});
-
-const showModal = ref(props.modelValue);
-const isLogin = ref(true);
-const loading = ref(false);
-const isPasswordVisible = ref(false);
-
-const form = reactive({
-  email: '',
-  password: '',
-  name: '',
-  password_confirmation: ''
-});
-
-const toggleMode = () => {
-  isLogin.value = !isLogin.value;
-  form.password = '';
-  form.password_confirmation = '';
-};
-
-const handleSubmit = async () => {
-  try {
-    loading.value = true;
-    if (isLogin.value) {
-      await authService.login({
-        email: form.email,
-        password: form.password
-      });
-    } else {
-      await authService.register({
-        name: form.name,
-        email: form.email,
-        password: form.password,
-        password_confirmation: form.password_confirmation
-      });
+export default {
+  props: {
+    modelValue: {
+      type: Boolean,
+      default: false
     }
+  },
+  emits: ['update:modelValue', 'authenticated'],
+  
+  setup(props, { emit }) {
+    // State
+    const showLoginModal = ref(true);
+    const showRegisterModal = ref(false);
+    const isLoading = ref(false);
+    const loginError = ref('');
+    const registerError = ref('');
     
-    $q.notify({
-      color: 'positive',
-      message: isLogin.value ? 'Zalogowano pomyślnie' : 'Zarejestrowano pomyślnie'
+    // Form data
+    const loginForm = ref({
+      email: '',
+      password: ''
     });
     
-    emit('authenticated');
-    showModal.value = false;
-  } catch (error) {
-    $q.notify({
-      color: 'negative',
-      message: error.response?.data?.message || 'Wystąpił błąd'
+    const registerForm = ref({
+      name: '',
+      email: '',
+      password: '',
+      password_confirmation: ''
     });
-  } finally {
-    loading.value = false;
+    
+    // Watch for parent v-model changes
+    watch(() => props.modelValue, (newVal) => {
+      if (newVal) {
+        showLoginModal.value = true;
+        showRegisterModal.value = false;
+      } else {
+        showLoginModal.value = false;
+        showRegisterModal.value = false;
+      }
+    });
+    
+    // Methods
+    const closeLoginModal = () => {
+      emit('update:modelValue', false);
+    };
+    
+    const closeRegisterModal = () => {
+      emit('update:modelValue', false);
+    };
+    
+    const switchToRegister = () => {
+      showLoginModal.value = false;
+      showRegisterModal.value = true;
+    };
+    
+    const switchToLogin = () => {
+      showLoginModal.value = true;
+      showRegisterModal.value = false;
+    };
+    
+    const handleLogin = async () => {
+      try {
+        isLoading.value = true;
+        loginError.value = '';
+        
+        await authService.login(loginForm.value);
+        emit('authenticated');
+        emit('update:modelValue', false);
+      } catch (error) {
+        loginError.value = error.response?.data?.message || 'Błąd logowania. Spróbuj ponownie.';
+      } finally {
+        isLoading.value = false;
+      }
+    };
+    
+    const handleRegister = async () => {
+      try {
+        isLoading.value = true;
+        registerError.value = '';
+        
+        await authService.register(registerForm.value);
+        emit('authenticated');
+        emit('update:modelValue', false);
+      } catch (error) {
+        registerError.value = error.response?.data?.message || 'Błąd rejestracji. Spróbuj ponownie.';
+      } finally {
+        isLoading.value = false;
+      }
+    };
+    
+    return {
+      showLoginModal,
+      showRegisterModal,
+      isLoading,
+      loginError,
+      registerError,
+      loginForm,
+      registerForm,
+      closeLoginModal,
+      closeRegisterModal,
+      switchToRegister,
+      switchToLogin,
+      handleLogin,
+      handleRegister
+    };
   }
 };
-
-watch(() => props.modelValue, (newVal) => {
-  showModal.value = newVal;
-});
-
-watch(showModal, (newVal) => {
-  emit('update:modelValue', newVal);
-});
-</script> 
+</script>
